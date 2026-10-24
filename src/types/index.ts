@@ -1,4 +1,4 @@
-import type { PriorityColor } from "../utils/priority-config.ts";
+import type { PriorityColor } from "../constants/index.ts";
 
 export type TaskStatus = string;
 

@@ -60,7 +60,7 @@ Running `backlog config` with no arguments launches the interactive advanced wiz
 
 > **Priority Values**: Set `priorities` to an ordered list of labels such as `["Very High", "High", "Medium", "Low", "Very Low"]`. The first value sorts highest. CLI, MCP, and Web inputs accept configured values case-insensitively and store normalized lowercase values in task frontmatter.
 
-> **Priority Colors**: `priority_colors` maps priorities to colors in the web UI (card borders and priority badges). Edit it in the project config file; it cannot be changed with `backlog config set`. Priority names match case-insensitively. The colors are `red`, `orange`, `yellow`, `green`, `teal`, `blue`, `purple`, `pink` and `gray`; any other value, or the same priority listed twice, stops Backlog with a message naming the key. An entry for a priority that is not configured has no effect. A priority that is not listed keeps its default: red for High, yellow for Medium, green for Low, gray for the rest.
+> **Priority Colors**: `priority_colors` maps priorities to colors in the web UI (card borders and priority badges). Edit it in the project config file; it cannot be changed with `backlog config set`. Priority names match case-insensitively. The colors are `red`, `orange`, `yellow`, `green`, `teal`, `blue`, `purple`, `pink` and `gray`; any other value, or the same priority listed twice, stops Backlog with a message naming the key. An entry for a priority that is not configured does not stop Backlog; it still colors tasks that keep that priority. A priority that is not listed keeps its default: red for High, yellow for Medium, green for Low, gray for the rest.
 >
 > ```yaml
 > priorities: ["Critical", "High", "Medium", "Low"]

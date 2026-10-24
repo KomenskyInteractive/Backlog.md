@@ -1,15 +1,14 @@
 import { describe, expect, it } from "bun:test";
+import { $ } from "bun";
+import { PRIORITY_COLORS, type PriorityColor } from "../constants/index.ts";
 import { FileSystem } from "../file-system/operations.ts";
+import { Core } from "../index.ts";
 import { BacklogServer } from "../server/index.ts";
 import type { BacklogConfig } from "../types/index.ts";
-import {
-	getPriorityColor,
-	PRIORITY_COLORS,
-	type PriorityColor,
-	resolvePriorityColors,
-} from "../utils/priority-config.ts";
+import { getPriorityColor, resolvePriorityColors } from "../utils/priority-config.ts";
 import { getPriorityColorClasses } from "../web/utils/priority-colors.ts";
-import { createUniqueTestDir, safeCleanup } from "./test-utils.ts";
+import { getTestCliPath } from "./test-cli.ts";
+import { createUniqueTestDir, initializeTestProject, safeCleanup } from "./test-utils.ts";
 
 const priorities = ["Critical", "High", "Medium", "Low"];
 const priorityColors: Record<string, PriorityColor> = {
@@ -113,6 +112,40 @@ describe("priority colors", () => {
 			});
 			expect(resolvePriorityColors({ high: "red\nauto_commit: true" })).toHaveProperty("error");
 		});
+
+		it("says a priority has no color rather than quoting an empty one", () => {
+			expect(resolvePriorityColors({ High: null })).toEqual({ error: expect.stringContaining('"High" has no color') });
+		});
+
+		it("accepts priority names that are also names of object properties", () => {
+			expect(resolvePriorityColors({ constructor: "red", toString: "blue" })).toEqual({
+				colors: Object.fromEntries([
+					["constructor", "red"],
+					["tostring", "blue"],
+				]),
+			});
+		});
+	});
+
+	describe("backlog config", () => {
+		it("gets priorityColors and points `set` at the config file", async () => {
+			const testDir = createUniqueTestDir("priority-colors-cli");
+			const cli = getTestCliPath();
+			try {
+				await initializeTestProject(new Core(testDir), "Colors");
+				const filesystem = new FileSystem(testDir);
+				const config = await filesystem.loadConfig();
+				if (!config) throw new Error("Expected test config");
+				await filesystem.saveConfig({ ...config, priorityColors: { high: "orange" } });
+
+				expect((await $`bun ${cli} config get priorityColors`.cwd(testDir).text()).trim()).toBe("High=orange");
+				const set = await $`bun ${cli} config set priorityColors x`.cwd(testDir).nothrow().quiet();
+				expect(set.exitCode).not.toBe(0);
+				expect(set.stderr.toString()).toContain("config file");
+			} finally {
+				await safeCleanup(testDir);
+			}
+		});
 	});
 
 	describe("web settings save", () => {
@@ -170,6 +203,11 @@ describe("priority colors", () => {
 			expect(getPriorityColor("high")).toBe("red");
 			expect(getPriorityColor("medium", { priorityColors: { critical: "red" } })).toBe("yellow");
 			expect(getPriorityColor("low")).toBe("green");
+		});
+
+		it("has no color for a priority named like an object property", () => {
+			expect(getPriorityColor("constructor")).toBeUndefined();
+			expect(getPriorityColor("toString", { priorityColors })).toBeUndefined();
 		});
 
 		it("has no color for any other priority, or for none", () => {

@@ -1,3 +1,4 @@
+import { PRIORITY_COLORS, type PriorityColor } from "../constants/index.ts";
 import type { BacklogConfig } from "../types/index.ts";
 
 export const DEFAULT_PRIORITY_OPTIONS = [
@@ -104,11 +105,6 @@ export function formatValidPriorityValues(
 	return getPriorityLabels(configOrPriorities).join(", ");
 }
 
-/** The colors `priority_colors` accepts. Each one has a fixed look in every view, in light and dark themes. */
-export const PRIORITY_COLORS = ["red", "orange", "yellow", "green", "teal", "blue", "purple", "pink", "gray"] as const;
-
-export type PriorityColor = (typeof PRIORITY_COLORS)[number];
-
 /** Colors of the default priorities, kept for projects that do not set `priority_colors`. */
 const DEFAULT_PRIORITY_COLORS: Record<string, PriorityColor> = { high: "red", medium: "yellow", low: "green" };
 
@@ -125,7 +121,11 @@ export function getPriorityColor(
 	if (!normalized) {
 		return undefined;
 	}
-	return config?.priorityColors?.[normalized] ?? DEFAULT_PRIORITY_COLORS[normalized];
+	const configured = config?.priorityColors;
+	if (configured && Object.hasOwn(configured, normalized)) {
+		return configured[normalized];
+	}
+	return Object.hasOwn(DEFAULT_PRIORITY_COLORS, normalized) ? DEFAULT_PRIORITY_COLORS[normalized] : undefined;
 }
 
 /**
@@ -143,10 +143,13 @@ export function resolvePriorityColors(
 		const color = String(rawColor ?? "")
 			.trim()
 			.toLowerCase();
+		if (!color) {
+			return { error: `"${priority}" has no color; use one of: ${PRIORITY_COLORS.join(", ")}` };
+		}
 		if (!isPriorityColor(color)) {
 			return { error: `"${color}" is not a color for "${priority}"; use one of: ${PRIORITY_COLORS.join(", ")}` };
 		}
-		if (colors[name]) {
+		if (Object.hasOwn(colors, name)) {
 			return { error: `"${priority}" is listed more than once` };
 		}
 		colors[name] = color;

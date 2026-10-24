@@ -1,5 +1,6 @@
+import type { PriorityColor } from "../../constants/index.ts";
 import type { BacklogConfig } from "../../types/index.ts";
-import { getPriorityColor, type PriorityColor } from "../../utils/priority-config.ts";
+import { getPriorityColor } from "../../utils/priority-config.ts";
 
 type PriorityColorClasses = { badge: string; border: string; icon: string };
 

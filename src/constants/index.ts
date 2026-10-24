@@ -88,3 +88,8 @@ export const DEFAULT_INIT_CONFIG = {
 } as const;
 
 export * from "../guidelines/index.ts";
+
+/** The colors `priority_colors` accepts. Each one has a fixed look in every view, in light and dark themes. */
+export const PRIORITY_COLORS = ["red", "orange", "yellow", "green", "teal", "blue", "purple", "pink", "gray"] as const;
+
+export type PriorityColor = (typeof PRIORITY_COLORS)[number];
