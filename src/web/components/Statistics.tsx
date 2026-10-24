@@ -189,7 +189,7 @@ const Statistics: React.FC<StatisticsProps> = ({
 	};
 
 	const PriorityIcon = ({ priority }: { priority: string }) =>
-		priority === 'none' ? (
+		!priority ? (
 			<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
 			</svg>

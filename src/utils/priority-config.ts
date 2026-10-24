@@ -112,7 +112,7 @@ export type PriorityColor = (typeof PRIORITY_COLORS)[number];
 /** Colors of the default priorities, kept for projects that do not set `priority_colors`. */
 const DEFAULT_PRIORITY_COLORS: Record<string, PriorityColor> = { high: "red", medium: "yellow", low: "green" };
 
-export function isPriorityColor(value: string): value is PriorityColor {
+function isPriorityColor(value: string): value is PriorityColor {
 	return (PRIORITY_COLORS as readonly string[]).includes(value);
 }
 
@@ -125,20 +125,17 @@ export function getPriorityColor(
 	if (!normalized) {
 		return undefined;
 	}
-	const color = config?.priorityColors?.[normalized] ?? DEFAULT_PRIORITY_COLORS[normalized];
-	return color && isPriorityColor(color) ? color : undefined;
+	return config?.priorityColors?.[normalized] ?? DEFAULT_PRIORITY_COLORS[normalized];
 }
 
 /**
- * Validate a priority-to-color mapping against the configured priorities, normalizing names and
- * colors. Returns the problem instead of guessing when a color is unknown, a priority is not
- * configured, or one priority is listed twice.
+ * Validate a priority-to-color mapping, normalizing names and colors. Returns the problem instead of
+ * guessing when a color is unknown or one priority is listed twice. Names need not be configured: an
+ * entry left behind by a renamed priority colors nothing, and must not stop Backlog.
  */
 export function resolvePriorityColors(
 	mapping: Record<string, unknown>,
-	configOrPriorities?: Pick<BacklogConfig, "priorities"> | readonly string[] | null,
 ): { colors: Record<string, PriorityColor> } | { error: string } {
-	const allowed = getPriorityValues(configOrPriorities);
 	const colors: Record<string, PriorityColor> = {};
 	for (const [priority, rawColor] of Object.entries(mapping)) {
 		const name = normalizePriorityValue(priority);
@@ -148,11 +145,6 @@ export function resolvePriorityColors(
 			.toLowerCase();
 		if (!isPriorityColor(color)) {
 			return { error: `"${color}" is not a color for "${priority}"; use one of: ${PRIORITY_COLORS.join(", ")}` };
-		}
-		if (!allowed.includes(name)) {
-			return {
-				error: `"${priority}" is not a configured priority; use one of: ${formatValidPriorityValues(configOrPriorities)}`,
-			};
 		}
 		if (colors[name]) {
 			return { error: `"${priority}" is listed more than once` };

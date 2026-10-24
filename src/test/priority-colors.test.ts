@@ -1,12 +1,23 @@
 import { describe, expect, it } from "bun:test";
 import { FileSystem } from "../file-system/operations.ts";
 import { BacklogServer } from "../server/index.ts";
-import { getPriorityColor, PRIORITY_COLORS, resolvePriorityColors } from "../utils/priority-config.ts";
+import type { BacklogConfig } from "../types/index.ts";
+import {
+	getPriorityColor,
+	PRIORITY_COLORS,
+	type PriorityColor,
+	resolvePriorityColors,
+} from "../utils/priority-config.ts";
 import { getPriorityColorClasses } from "../web/utils/priority-colors.ts";
 import { createUniqueTestDir, safeCleanup } from "./test-utils.ts";
 
 const priorities = ["Critical", "High", "Medium", "Low"];
-const priorityColors = { critical: "red", high: "orange", medium: "yellow", low: "green" };
+const priorityColors: Record<string, PriorityColor> = {
+	critical: "red",
+	high: "orange",
+	medium: "yellow",
+	low: "green",
+};
 
 describe("priority colors", () => {
 	describe("config.yml", () => {
@@ -39,14 +50,10 @@ describe("priority colors", () => {
 			expect(() => parse(content)).toThrow(/orange/);
 		});
 
-		it("refuses a priority that is not configured, so a typo does not go unnoticed", () => {
-			const content = 'project_name: "P"\npriorities: ["Critical"]\npriority_colors:\n  Critcal: red\n';
-			expect(() => parse(content)).toThrow(/Critcal/);
-		});
-
-		it("checks names against the default priorities when none are configured", () => {
-			expect(parse('project_name: "P"\npriority_colors:\n  High: orange\n').priorityColors).toEqual({ high: "orange" });
-			expect(() => parse('project_name: "P"\npriority_colors:\n  Critical: red\n')).toThrow(/Critical/);
+		it("keeps an entry for a priority that is not configured, so a renamed priority does not stop Backlog", () => {
+			const content = 'project_name: "P"\npriorities: ["Urgent"]\npriority_colors:\n  Critical: red\n';
+			expect(parse(content).priorityColors).toEqual({ critical: "red" });
+			expect(getPriorityColor("urgent", parse(content))).toBeUndefined();
 		});
 
 		it("refuses the same priority listed twice in different letter case", () => {
@@ -95,16 +102,16 @@ describe("priority colors", () => {
 
 	describe("resolvePriorityColors", () => {
 		it("normalizes names and colors of a valid mapping", () => {
-			expect(resolvePriorityColors({ Critical: "Red", high: "orange" }, priorities)).toEqual({
+			expect(resolvePriorityColors({ Critical: "Red", high: "orange" })).toEqual({
 				colors: { critical: "red", high: "orange" },
 			});
 		});
 
 		it("explains what is wrong with an invalid one, as the web settings save needs", () => {
-			expect(resolvePriorityColors({ high: "crimson" }, priorities)).toEqual({
+			expect(resolvePriorityColors({ high: "crimson" })).toEqual({
 				error: expect.stringContaining("crimson"),
 			});
-			expect(resolvePriorityColors({ high: "red\nauto_commit: true" }, priorities)).toHaveProperty("error");
+			expect(resolvePriorityColors({ high: "red\nauto_commit: true" })).toHaveProperty("error");
 		});
 	});
 
@@ -115,7 +122,7 @@ describe("priority colors", () => {
 			const server = new BacklogServer(testDir);
 			try {
 				await filesystem.ensureBacklogStructure();
-				const config = {
+				const config: BacklogConfig = {
 					projectName: "Colors",
 					statuses: ["To Do", "Done"],
 					labels: [],
@@ -135,6 +142,14 @@ describe("priority colors", () => {
 				const rejected = await put({ critical: "crimson" });
 				expect(rejected.status).toBe(400);
 				expect((await new FileSystem(testDir).loadConfig())?.priorityColors).toEqual({ critical: "red" });
+
+				const { priorities: _omitted, ...withoutPriorities } = config;
+				const partial = await fetch(`http://127.0.0.1:${server.getPort()}/api/config`, {
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ ...withoutPriorities, priorityColors: { critical: "red" } }),
+				});
+				expect(partial.status).toBe(200);
 
 				expect((await put({ Critical: "Pink" })).status).toBe(200);
 				expect((await new FileSystem(testDir).loadConfig())?.priorityColors).toEqual({ critical: "pink" });

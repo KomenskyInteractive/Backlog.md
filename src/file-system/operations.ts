@@ -257,15 +257,11 @@ function parseConfigListValue(content: string, key: ConfigListKey, configPath: s
 }
 
 /**
- * Parse `priority_colors`, a mapping from a configured priority to one of PRIORITY_COLORS. Names
- * match case-insensitively, so `Critical: Red` colors tasks stored as `critical`. Throws rather than
- * guess at a value that is not a mapping, an unknown color, or a priority that is not configured.
+ * Parse `priority_colors`, a mapping from priority to one of PRIORITY_COLORS. Names match
+ * case-insensitively, so `Critical: Red` colors tasks stored as `critical`. Throws rather than guess
+ * at a value that is not a mapping, an unknown color, or a priority listed twice.
  */
-function parsePriorityColorsValue(
-	content: string,
-	priorities: string[] | undefined,
-	configPath: string,
-): Record<string, string> | undefined {
+function parsePriorityColorsValue(content: string, configPath: string): BacklogConfig["priorityColors"] {
 	const key = "priority_colors";
 	const block = extractConfigKeyYaml(content, key);
 	if (block === undefined) {
@@ -288,7 +284,7 @@ function parsePriorityColorsValue(
 			"Edit that key so each line reads `Priority: color`, then run the command again.",
 		);
 	}
-	const resolved = resolvePriorityColors(parsed as Record<string, unknown>, priorities);
+	const resolved = resolvePriorityColors(parsed as Record<string, unknown>);
 	if ("error" in resolved) {
 		throw configValueError(configPath, key, resolved.error, "Edit that key, then run the command again.");
 	}
@@ -2426,7 +2422,7 @@ ${description || `Milestone: ${title}`}`,
 		config.types = parseListValue("types");
 		config.priorities = parseListValue("priorities");
 		config.projects = parseListValue("projects");
-		config.priorityColors = parsePriorityColorsValue(content, config.priorities, this.resolvedConfigPath);
+		config.priorityColors = parsePriorityColorsValue(content, this.resolvedConfigPath);
 		config.defaultAssignee = parseListValue("default_assignee");
 		const lines = content.split("\n");
 		// Entries of the priority_colors mapping are priority names, not config keys: a priority

@@ -1547,7 +1547,7 @@ export class BacklogServer {
 			}
 
 			if (updatedConfig.priorityColors) {
-				const resolved = resolvePriorityColors(updatedConfig.priorityColors, updatedConfig.priorities);
+				const resolved = resolvePriorityColors(updatedConfig.priorityColors);
 				if ("error" in resolved) {
 					return Response.json({ error: `Invalid priority colors: ${resolved.error}` }, { status: 400 });
 				}
