@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { type Task } from '../../types';
 import StoredDate from './StoredDate';
 import { formatPriorityLabel } from '../../utils/priority-config';
+import { usePriorityColorClasses } from '../contexts/PriorityColorsContext';
 
 interface DraftsListProps {
   onEditTask: (task: Task) => void;
@@ -10,6 +11,7 @@ interface DraftsListProps {
 }
 
 const DraftsList: React.FC<DraftsListProps> = ({ onEditTask, onNewDraft, dateFormat }) => {
+  const getPriorityColorClasses = usePriorityColorClasses();
   const [drafts, setDrafts] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,19 +68,6 @@ const DraftsList: React.FC<DraftsListProps> = ({ onEditTask, onNewDraft, dateFor
       await loadDrafts();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to promote draft');
-    }
-  };
-
-  const getPriorityColor = (priority?: string) => {
-    switch (priority?.toLowerCase()) {
-      case 'high':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200';
-      case 'low':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
   };
 
@@ -141,7 +130,7 @@ const DraftsList: React.FC<DraftsListProps> = ({ onEditTask, onNewDraft, dateFor
                     <div className="flex items-center space-x-3 mb-2">
                       <h3 className="text-lg font-medium text-gray-900 dark:text-white">{draft.title}</h3>
                       {draft.priority && (
-                        <span className={`px-2 py-1 text-xs font-medium rounded-circle ${getPriorityColor(draft.priority)}`}>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-circle ${getPriorityColorClasses(draft.priority).badge}`}>
                           {formatPriorityLabel(draft.priority)}
                         </span>
                       )}

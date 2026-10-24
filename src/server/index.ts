@@ -26,7 +26,7 @@ import { normalizeDueDate } from "../utils/due-date.ts";
 import { isAmbiguousIdError } from "../utils/entity-id.ts";
 import { resolveMilestoneInputForStorage } from "../utils/milestone-storage.ts";
 import { DRAFT_PREFIX, extractAnyPrefix, getTaskPrefixError } from "../utils/prefix-config.ts";
-import { formatValidPriorityValues, resolvePriorityValue } from "../utils/priority-config.ts";
+import { formatValidPriorityValues, resolvePriorityColors, resolvePriorityValue } from "../utils/priority-config.ts";
 import {
 	formatValidProjectValues,
 	getProjectValues,
@@ -1544,6 +1544,14 @@ export class BacklogServer {
 
 			if (updatedConfig.defaultPort && (updatedConfig.defaultPort < 1 || updatedConfig.defaultPort > 65535)) {
 				return Response.json({ error: "Port must be between 1 and 65535" }, { status: 400 });
+			}
+
+			if (updatedConfig.priorityColors) {
+				const resolved = resolvePriorityColors(updatedConfig.priorityColors, updatedConfig.priorities);
+				if ("error" in resolved) {
+					return Response.json({ error: `Invalid priority colors: ${resolved.error}` }, { status: 400 });
+				}
+				updatedConfig.priorityColors = resolved.colors;
 			}
 
 			// Save configuration

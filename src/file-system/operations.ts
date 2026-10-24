@@ -56,6 +56,7 @@ import {
 	idForFilename,
 	normalizeId,
 } from "../utils/prefix-config.ts";
+import { resolvePriorityColors } from "../utils/priority-config.ts";
 import { matchesProjectFilter } from "../utils/project-config.ts";
 import { normalizeStatusSet, statusMatchesSet } from "../utils/status-filter.ts";
 import { withoutVacatedTaskLinks } from "../utils/task-links.ts";
@@ -253,6 +254,45 @@ function parseConfigListValue(content: string, key: ConfigListKey, configPath: s
 		return assignee ? [assignee] : [];
 	}
 	throw configTypeError(configPath, key, parsed);
+}
+
+/**
+ * Parse `priority_colors`, a mapping from a configured priority to one of PRIORITY_COLORS. Names
+ * match case-insensitively, so `Critical: Red` colors tasks stored as `critical`. Throws rather than
+ * guess at a value that is not a mapping, an unknown color, or a priority that is not configured.
+ */
+function parsePriorityColorsValue(
+	content: string,
+	priorities: string[] | undefined,
+	configPath: string,
+): Record<string, string> | undefined {
+	const key = "priority_colors";
+	const block = extractConfigKeyYaml(content, key);
+	if (block === undefined) {
+		return undefined;
+	}
+	const read = readYamlKey(block, key);
+	if (!("value" in read)) {
+		throw configSyntaxError(configPath, key, read.error);
+	}
+	const parsed = read.value;
+	if (parsed === null) {
+		return undefined;
+	}
+	if (typeof parsed !== "object" || Array.isArray(parsed)) {
+		const shape = Array.isArray(parsed) ? "a list" : describeConfigValue(parsed);
+		throw configValueError(
+			configPath,
+			key,
+			`expected a mapping of priority to color, got ${shape}`,
+			"Edit that key so each line reads `Priority: color`, then run the command again.",
+		);
+	}
+	const resolved = resolvePriorityColors(parsed as Record<string, unknown>, priorities);
+	if ("error" in resolved) {
+		throw configValueError(configPath, key, resolved.error, "Edit that key, then run the command again.");
+	}
+	return resolved.colors;
 }
 
 const DEFAULT_CREATE_LOCK_TIMEOUT_MS = 30_000;
@@ -2386,18 +2426,30 @@ ${description || `Milestone: ${title}`}`,
 		config.types = parseListValue("types");
 		config.priorities = parseListValue("priorities");
 		config.projects = parseListValue("projects");
+		config.priorityColors = parsePriorityColorsValue(content, config.priorities, this.resolvedConfigPath);
 		config.defaultAssignee = parseListValue("default_assignee");
 		const lines = content.split("\n");
+		// Entries of the priority_colors mapping are priority names, not config keys: a priority
+		// called `date_format` must not set the date format.
+		let mappingIndent: number | undefined;
 
 		for (const line of lines) {
 			const trimmed = line.trim();
 			if (!trimmed || trimmed.startsWith("#")) continue;
+
+			const indent = line.length - line.trimStart().length;
+			if (mappingIndent !== undefined && indent > mappingIndent) continue;
+			mappingIndent = undefined;
 
 			const colonIndex = trimmed.indexOf(":");
 			if (colonIndex === -1) continue;
 
 			const key = trimmed.substring(0, colonIndex).trim();
 			const value = trimmed.substring(colonIndex + 1).trim();
+			if (key === "priority_colors") {
+				mappingIndent = indent;
+				continue;
+			}
 
 			switch (key) {
 				case "project_name":
@@ -2477,6 +2529,7 @@ ${description || `Milestone: ${title}`}`,
 			labels: config.labels || [],
 			types: config.types,
 			priorities: config.priorities,
+			priorityColors: config.priorityColors,
 			projects: config.projects,
 			definitionOfDone: config.definitionOfDone,
 			defaultStatus: config.defaultStatus,
@@ -2513,6 +2566,14 @@ ${description || `Milestone: ${title}`}`,
 			...(config.types && config.types.length > 0 ? [`types: [${config.types.map((t) => `"${t}"`).join(", ")}]`] : []),
 			...(config.priorities && config.priorities.length > 0
 				? [`priorities: [${config.priorities.map((p) => `"${p}"`).join(", ")}]`]
+				: []),
+			...(config.priorityColors && Object.keys(config.priorityColors).length > 0
+				? [
+						"priority_colors:",
+						...Object.entries(config.priorityColors).map(
+							([priority, color]) => `  ${JSON.stringify(priority)}: ${color}`,
+						),
+					]
 				: []),
 			...(config.projects && config.projects.length > 0
 				? [`projects: [${config.projects.map((p) => `"${p}"`).join(", ")}]`]

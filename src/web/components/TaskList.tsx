@@ -12,6 +12,7 @@ import { compareTaskIds, compareTaskIdsDescending, sortTasks } from "../../utils
 import { isTerminalStatus } from "../../utils/terminal-status.ts";
 import { collectArchivedMilestoneKeys, getMilestoneLabel, milestoneKey } from "../utils/milestones";
 import { parseStoredUtcDate } from "../../utils/utc-timestamp.ts";
+import { usePriorityColorClasses } from "../contexts/PriorityColorsContext";
 import {
 	formatPriorityLabel,
 	getPriorityOptions,
@@ -133,6 +134,7 @@ const TaskList: React.FC<TaskListProps> = ({
 	dateFormat,
 	isLoading = false,
 }) => {
+	const getPriorityColorClasses = usePriorityColorClasses();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const statusOptions = useMemo(
 		() => (availableStatuses.length > 0 ? availableStatuses : [...DEFAULT_STATUSES]),
@@ -555,19 +557,6 @@ const TaskList: React.FC<TaskListProps> = ({
 		}
 	};
 
-	const getPriorityColor = (priority?: string) => {
-		switch (priority?.toLowerCase()) {
-			case "high":
-				return "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200";
-			case "medium":
-				return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200";
-			case "low":
-				return "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200";
-			default:
-				return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
-		}
-	};
-
 	const handleSortChange = (column: TaskSortColumn) => {
 		if (sortColumn === column) {
 			setSortDirection((previous) => (previous === "asc" ? "desc" : "asc"));
@@ -945,7 +934,7 @@ const TaskList: React.FC<TaskListProps> = ({
 											<td className="px-3 py-2.5">
 												{task.priority ? (
 													<span
-														className={`inline-flex rounded-circle px-2 py-0.5 text-[11px] font-medium ${getPriorityColor(task.priority)}`}
+														className={`inline-flex rounded-circle px-2 py-0.5 text-[11px] font-medium ${getPriorityColorClasses(task.priority).badge}`}
 													>
 														{formatPriorityLabel(task.priority, availablePriorities)}
 													</span>

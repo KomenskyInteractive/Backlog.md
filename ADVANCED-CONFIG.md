@@ -26,6 +26,7 @@ Running `backlog config` with no arguments launches the interactive advanced wiz
 | `definition_of_done` | Default DoD checklist items for new tasks | `(not set)` |
 | `statuses`        | Board columns      | `[To Do, In Progress, Done]`  |
 | `priorities`      | Ordered task priority labels | `[High, Medium, Low]` |
+| `priorityColors`  | Color of each priority in the web UI | High red, Medium yellow, Low green |
 | `projects`        | Allowed project values for monorepo backlogs | `(not set)` |
 | `dateFormat`      | Display-only date format | `yyyy-mm-dd`            |
 | `includeDatetimeInDates` | Add time to new dates | `true`              |
@@ -58,6 +59,17 @@ Running `backlog config` with no arguments launches the interactive advanced wiz
 > **Default Assignee**: `defaultAssignee` is a list, so `backlog config set defaultAssignee "@alice,@bob"` stores both names. Every create surface (CLI `task create` and `draft create`, the creation wizard, TUI, Web, MCP) applies it when no assignee is supplied. An explicit assignee replaces the default entirely instead of merging with it, and setting the value to an empty string clears the default so new tasks start unassigned. To keep a single task unassigned while the default stays configured, pass an explicit empty assignee: `backlog task create "Title" -a ""`. The same value clears existing assignees on edit: `backlog task edit BACK-1 -a ""` (MCP `task_create`/`task_edit` use an empty `assignee` array). When editing `config.yml` by hand, quote the names (`default_assignee: ["@alice"]`) because `@` starts a reserved YAML character; a value YAML cannot read is ignored rather than guessed at.
 
 > **Priority Values**: Set `priorities` to an ordered list of labels such as `["Very High", "High", "Medium", "Low", "Very Low"]`. The first value sorts highest. CLI, MCP, and Web inputs accept configured values case-insensitively and store normalized lowercase values in task frontmatter.
+
+> **Priority Colors**: `priority_colors` maps priorities to colors in the web UI (card borders and priority badges). Edit it in the project config file; it cannot be changed with `backlog config set`. Priority names match case-insensitively. The colors are `red`, `orange`, `yellow`, `green`, `teal`, `blue`, `purple`, `pink` and `gray`; any other value stops Backlog with a message naming the key. A priority that is not listed keeps its default: red for High, yellow for Medium, green for Low, gray for the rest.
+>
+> ```yaml
+> priorities: ["Critical", "High", "Medium", "Low"]
+> priority_colors:
+>   Critical: red
+>   High: orange
+>   Medium: yellow
+>   Low: green
+> ```
 
 > **Project Values**: `projects` tags each task with one project in a monorepo-style backlog. It has no default, so the field stays inert until you set it — until then no surface offers it, and `--project` fails with a message naming the config file. Set it by editing the project config file directly (like `statuses`, `labels`, `types`, and `priorities`, it cannot be changed with `backlog config set`):
 >

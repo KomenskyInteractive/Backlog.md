@@ -120,7 +120,12 @@ import {
 	isReservedTaskPrefix,
 	normalizeId,
 } from "./utils/prefix-config.ts";
-import { formatValidPriorityValues, getPriorityOptions, resolvePriorityValue } from "./utils/priority-config.ts";
+import {
+	formatPriorityLabel,
+	formatValidPriorityValues,
+	getPriorityOptions,
+	resolvePriorityValue,
+} from "./utils/priority-config.ts";
 import {
 	formatValidProjectValues,
 	getProjectValues,
@@ -5747,6 +5752,13 @@ addHelpSchema(configCmd.command("list"), {
 				`  priorities: [${getPriorityOptions(config)
 					.map((priority) => priority.label)
 					.join(", ")}]`,
+			);
+			console.log(
+				`  priorityColors: ${
+					Object.entries(config.priorityColors ?? {})
+						.map(([priority, color]) => `${formatPriorityLabel(priority, config)}=${color}`)
+						.join(", ") || "(not set)"
+				}`,
 			);
 			console.log(`  types: [${getTaskTypeValues(config).join(", ")}]`);
 			console.log(`  projects: [${getProjectValues(config).join(", ")}]`);

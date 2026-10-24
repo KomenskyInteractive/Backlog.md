@@ -1,6 +1,7 @@
 import React from 'react';
 import { type Task } from '../../types';
-import { formatPriorityLabel } from '../../utils/priority-config';
+import { formatPriorityLabel, normalizePriorityValue } from '../../utils/priority-config';
+import { usePriorityColorClasses } from '../contexts/PriorityColorsContext';
 import AcceptanceCriteriaProgress, { getAcceptanceCriteriaProgressCounts } from './AcceptanceCriteriaProgress';
 import StoredDate from './StoredDate';
 import ProjectBadge from './ProjectBadge';
@@ -76,6 +77,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   onSelectionDragChange,
 }) => {
   const [isDragging, setIsDragging] = React.useState(false);
+  const getPriorityColorClasses = usePriorityColorClasses();
   const [showBranchTooltip, setShowBranchTooltip] = React.useState(false);
 
   // Check if task is from another branch (read-only)
@@ -133,32 +135,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
     onDragEnd?.();
   };
 
-  const getPriorityClass = (priority?: string) => {
-    switch (priority) {
-      case 'high': return 'border-l-4 border-l-red-500 dark:border-l-red-400';
-      case 'medium': return 'border-l-4 border-l-yellow-500 dark:border-l-yellow-400';
-      case 'low': return 'border-l-4 border-l-green-500 dark:border-l-green-400';
-      default: return 'border-l-4 border-l-gray-300 dark:border-l-gray-600';
-    }
-  };
-
-  const getPriorityBadge = (priority?: string) => {
-    switch (priority) {
-      case 'high': return { bg: 'bg-red-100 dark:bg-red-900/40', text: 'text-red-700 dark:text-red-300', label: 'High' };
-      case 'medium': return { bg: 'bg-yellow-100 dark:bg-yellow-900/40', text: 'text-yellow-700 dark:text-yellow-300', label: 'Med' };
-      case 'low': return { bg: 'bg-green-100 dark:bg-green-900/40', text: 'text-green-700 dark:text-green-300', label: 'Low' };
-      default:
-        return priority
-          ? {
-              bg: 'bg-gray-100 dark:bg-gray-600',
-              text: 'text-gray-700 dark:text-gray-200',
-              label: formatPriorityLabel(priority),
-            }
-          : null;
-    }
-  };
-
-  const priorityBadge = getPriorityBadge(task.priority);
+  const priorityClasses = getPriorityColorClasses(task.priority);
+  const priorityLabel = normalizePriorityValue(task.priority) === 'medium' ? 'Med' : formatPriorityLabel(task.priority);
 
   return (
     <div className="relative">
@@ -180,7 +158,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
           isFromOtherBranch 
             ? 'opacity-75 cursor-not-allowed border-dashed' 
             : 'cursor-pointer hover:shadow-md dark:hover:shadow-lg hover:border-stone-500 dark:hover:border-stone-400'
-        } ${getPriorityClass(task.priority)} ${
+        } border-l-4 ${priorityClasses.border} ${
           isDragging || (isSelected && isSelectionDragging) ? 'opacity-50 transform rotate-2 scale-105' : ''
         } ${
           isSelected
@@ -236,12 +214,12 @@ const TaskCard: React.FC<TaskCardProps> = ({
             <TaskTypeBadge type={task.type} availableTypes={availableTypes} className="min-w-0" />
             <ProjectBadge project={task.project} availableProjects={availableProjects} className="min-w-0" />
           </div>
-          {(acceptanceCriteriaProgress || priorityBadge) && (
+          {(acceptanceCriteriaProgress || priorityLabel) && (
             <div className="ml-auto flex shrink-0 items-center gap-2">
               <AcceptanceCriteriaProgress task={task} density="card" />
-              {priorityBadge && (
-                <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded ${priorityBadge.bg} ${priorityBadge.text} transition-colors duration-200`}>
-                  {priorityBadge.label}
+              {priorityLabel && (
+                <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded ${priorityClasses.badge} transition-colors duration-200`}>
+                  {priorityLabel}
                 </span>
               )}
             </div>
