@@ -174,6 +174,12 @@ describe("priority colors", () => {
 
 				const rejected = await put({ critical: "crimson" });
 				expect(rejected.status).toBe(400);
+				const list = await fetch(`http://127.0.0.1:${server.getPort()}/api/config`, {
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ ...config, priorityColors: ["red"] }),
+				});
+				expect(list.status).toBe(400);
 				expect((await new FileSystem(testDir).loadConfig())?.priorityColors).toEqual({ critical: "red" });
 
 				const { priorities: _omitted, ...withoutPriorities } = config;

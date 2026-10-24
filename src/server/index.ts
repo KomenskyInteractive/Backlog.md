@@ -1547,6 +1547,12 @@ export class BacklogServer {
 			}
 
 			if (updatedConfig.priorityColors) {
+				if (typeof updatedConfig.priorityColors !== "object" || Array.isArray(updatedConfig.priorityColors)) {
+					return Response.json(
+						{ error: "Invalid priority colors: expected a mapping of priority to color" },
+						{ status: 400 },
+					);
+				}
 				const resolved = resolvePriorityColors(updatedConfig.priorityColors);
 				if ("error" in resolved) {
 					return Response.json({ error: `Invalid priority colors: ${resolved.error}` }, { status: 400 });
