@@ -89,6 +89,8 @@ describe("compact task IDs", () => {
 				expect(await $`bun ${cli} config list`.cwd(testDir).text()).toContain("compactTaskIds: true");
 				const rejected = await $`bun ${cli} config set compactTaskIds maybe`.cwd(testDir).nothrow().quiet();
 				expect(rejected.exitCode).not.toBe(0);
+				expect(await $`bun ${cli} config get --help`.cwd(testDir).text()).toContain("compactTaskIds");
+				expect(await $`bun ${cli} config set --help`.cwd(testDir).text()).toContain("compactTaskIds");
 			} finally {
 				await safeCleanup(testDir);
 			}
