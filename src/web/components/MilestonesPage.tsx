@@ -4,6 +4,7 @@ import { apiClient } from "../lib/api";
 import { buildMilestoneBuckets, collectArchivedMilestoneKeys, isDoneStatus, milestoneKey } from "../utils/milestones";
 import { type Milestone, type MilestoneBucket, type Task } from "../../types";
 import { createTaskSearchIndex } from "../../utils/task-search";
+import { usePriorityColorClasses } from "../contexts/PriorityColorsContext";
 import MilestoneTaskRow from "./MilestoneTaskRow";
 import Modal from "./Modal";
 import StoredDate from "./StoredDate";
@@ -56,6 +57,7 @@ const MilestonesPage: React.FC<MilestonesPageProps> = ({
 	onRefreshData,
 	dateFormat,
 }) => {
+	const getPriorityColorClasses = usePriorityColorClasses();
 	const [newMilestone, setNewMilestone] = useState("");
 	const [newMilestoneDueDate, setNewMilestoneDueDate] = useState("");
 	const [error, setError] = useState<string | null>(null);
@@ -424,19 +426,6 @@ const MilestonesPage: React.FC<MilestonesPageProps> = ({
 		return "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300";
 	};
 
-	const getPriorityBadgeClass = (priority?: string) => {
-		switch (priority?.toLowerCase()) {
-			case "high":
-				return "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300";
-			case "medium":
-				return "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300";
-			case "low":
-				return "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300";
-			default:
-				return "";
-		}
-	};
-
 	const getStatusDotColor = (status?: string | null) => {
 		const normalized = (status ?? "").toLowerCase();
 		if (normalized.includes("done") || normalized.includes("complete")) return "#10b981";
@@ -626,7 +615,7 @@ const MilestonesPage: React.FC<MilestonesPageProps> = ({
 											task={task}
 											isDone={isDoneStatus(task.status)}
 											statusBadgeClass={getStatusBadgeClass(task.status)}
-											priorityBadgeClass={getPriorityBadgeClass(task.priority)}
+											priorityBadgeClass={getPriorityColorClasses(task.priority).badge}
 											onEditTask={onEditTask}
 											onDragStart={handleDragStart}
 											onDragEnd={handleDragEnd}
@@ -709,7 +698,7 @@ const MilestonesPage: React.FC<MilestonesPageProps> = ({
 													task={task}
 													isDone={isDoneStatus(task.status)}
 													statusBadgeClass={getStatusBadgeClass(task.status)}
-													priorityBadgeClass={getPriorityBadgeClass(task.priority)}
+													priorityBadgeClass={getPriorityColorClasses(task.priority).badge}
 													onEditTask={onEditTask}
 													onDragStart={handleDragStart}
 													onDragEnd={handleDragEnd}

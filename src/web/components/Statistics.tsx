@@ -3,6 +3,7 @@ import { apiClient } from '../lib/api';
 import type { TaskStatistics } from '../../core/statistics';
 import type { Task } from '../../types';
 import { formatPriorityLabel } from '../../utils/priority-config';
+import { usePriorityColorClasses } from '../contexts/PriorityColorsContext';
 import LoadingSpinner from './LoadingSpinner';
 import StoredDate from './StoredDate';
 
@@ -26,6 +27,7 @@ const Statistics: React.FC<StatisticsProps> = ({
 	projectName,
 	dateFormat,
 }) => {
+	const getPriorityColorClasses = usePriorityColorClasses();
 	const [statistics, setStatistics] = useState<StatisticsData | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -186,34 +188,16 @@ const Statistics: React.FC<StatisticsProps> = ({
 		}
 	};
 
-	const PriorityIcon = ({ priority }: { priority: string }) => {
-		switch (priority.toLowerCase()) {
-			case 'high':
-				return (
-					<svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-				);
-			case 'medium':
-				return (
-					<svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-				);
-			case 'low':
-				return (
-					<svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-				);
-			default:
-				return (
-					<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-					</svg>
-				);
-		}
-	};
+	const PriorityIcon = ({ priority }: { priority: string }) =>
+		!priority ? (
+			<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+			</svg>
+		) : (
+			<svg className={`w-4 h-4 ${getPriorityColorClasses(priority).icon}`} fill="currentColor" viewBox="0 0 24 24">
+				<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+			</svg>
+		);
 
 	const getStatusColor = (status: string) => {
 		switch (status.toLowerCase()) {
@@ -224,15 +208,6 @@ const Statistics: React.FC<StatisticsProps> = ({
 		}
 	};
 
-	const getPriorityColor = (priority: string) => {
-		switch (priority.toLowerCase()) {
-			case 'high': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200';
-			case 'medium': return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200';
-			case 'low': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200';
-			case 'none': return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
-			default: return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
-		}
-	};
 	const priorityBreakdown = [
 		...Object.entries(statistics.priorityCounts).map(([priority, count]) => ({
 			key: `priority:${priority}`,
@@ -381,7 +356,7 @@ const Statistics: React.FC<StatisticsProps> = ({
 							<div key={key} className="flex items-center justify-between">
 								<div className="flex items-center space-x-3">
 									<PriorityIcon priority={priority} />
-									<span className={`px-3 py-1 rounded-circle text-sm font-medium ${getPriorityColor(priority)}`}>
+									<span className={`px-3 py-1 rounded-circle text-sm font-medium ${getPriorityColorClasses(priority).badge}`}>
 										{label}
 									</span>
 								</div>

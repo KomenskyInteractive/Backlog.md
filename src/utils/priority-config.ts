@@ -1,3 +1,4 @@
+import { PRIORITY_COLORS, type PriorityColor } from "../constants/index.ts";
 import type { BacklogConfig } from "../types/index.ts";
 
 export const DEFAULT_PRIORITY_OPTIONS = [
@@ -102,4 +103,56 @@ export function formatValidPriorityValues(
 	configOrPriorities?: Pick<BacklogConfig, "priorities"> | readonly string[] | null,
 ): string {
 	return getPriorityLabels(configOrPriorities).join(", ");
+}
+
+/** Colors of the default priorities, kept for projects that do not set `priority_colors`. */
+const DEFAULT_PRIORITY_COLORS: Record<string, PriorityColor> = { high: "red", medium: "yellow", low: "green" };
+
+function isPriorityColor(value: string): value is PriorityColor {
+	return (PRIORITY_COLORS as readonly string[]).includes(value);
+}
+
+/** The color of a priority: the configured one, else the default for high, medium and low, else none. */
+export function getPriorityColor(
+	value: string | null | undefined,
+	config?: Pick<BacklogConfig, "priorityColors"> | null,
+): PriorityColor | undefined {
+	const normalized = normalizePriorityValue(value);
+	if (!normalized) {
+		return undefined;
+	}
+	const configured = config?.priorityColors;
+	if (configured && Object.hasOwn(configured, normalized)) {
+		return configured[normalized];
+	}
+	return Object.hasOwn(DEFAULT_PRIORITY_COLORS, normalized) ? DEFAULT_PRIORITY_COLORS[normalized] : undefined;
+}
+
+/**
+ * Validate a priority-to-color mapping, normalizing names and colors. Returns the problem instead of
+ * guessing when a color is unknown or one priority is listed twice. Names need not be configured: an
+ * entry left behind by a renamed priority colors nothing, and must not stop Backlog.
+ */
+export function resolvePriorityColors(
+	mapping: Record<string, unknown>,
+): { colors: Record<string, PriorityColor> } | { error: string } {
+	const colors: Record<string, PriorityColor> = {};
+	for (const [priority, rawColor] of Object.entries(mapping)) {
+		const name = normalizePriorityValue(priority);
+		if (!name) continue;
+		const color = String(rawColor ?? "")
+			.trim()
+			.toLowerCase();
+		if (!color) {
+			return { error: `"${priority}" has no color; use one of: ${PRIORITY_COLORS.join(", ")}` };
+		}
+		if (!isPriorityColor(color)) {
+			return { error: `"${color}" is not a color for "${priority}"; use one of: ${PRIORITY_COLORS.join(", ")}` };
+		}
+		if (Object.hasOwn(colors, name)) {
+			return { error: `"${priority}" is listed more than once` };
+		}
+		colors[name] = color;
+	}
+	return { colors };
 }

@@ -1,3 +1,5 @@
+import type { PriorityColor } from "../constants/index.ts";
+
 export type TaskStatus = string;
 
 /**
@@ -369,6 +371,8 @@ export interface BacklogConfig {
 	types?: string[];
 	/** Ordered task priority labels. Defaults to High, Medium, Low when not configured. */
 	priorities?: string[];
+	/** Color of each priority, keyed by normalized priority value. Values are names from PRIORITY_COLORS. */
+	priorityColors?: Record<string, PriorityColor>;
 	/** Allowed monorepo project/component values. No default; the `project` field is unusable until this is configured. */
 	projects?: string[];
 	/** @deprecated Milestones are sourced from milestone files, not config. */

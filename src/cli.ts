@@ -120,7 +120,12 @@ import {
 	isReservedTaskPrefix,
 	normalizeId,
 } from "./utils/prefix-config.ts";
-import { formatValidPriorityValues, getPriorityOptions, resolvePriorityValue } from "./utils/priority-config.ts";
+import {
+	formatPriorityLabel,
+	formatValidPriorityValues,
+	getPriorityOptions,
+	resolvePriorityValue,
+} from "./utils/priority-config.ts";
 import {
 	formatValidProjectValues,
 	getProjectValues,
@@ -165,6 +170,7 @@ const CONFIG_GET_KEYS = [
 	"statuses",
 	"labels",
 	"priorities",
+	"priorityColors",
 	"types",
 	"projects",
 	"milestones",
@@ -5287,8 +5293,15 @@ agentsCmd
 	});
 
 // Config command group
+/** `priority_colors` as one line, such as `Critical=red, High=orange`. */
+function formatPriorityColors(config: BacklogConfig): string {
+	return Object.entries(config.priorityColors ?? {})
+		.map(([priority, color]) => `${formatPriorityLabel(priority, config)}=${color}`)
+		.join(", ");
+}
+
 const CONFIG_AVAILABLE_KEYS =
-	"Available keys: defaultEditor, projectName, defaultAssignee, defaultStatus, statuses, labels, priorities, types, projects, milestones, definitionOfDone, dateFormat, maxColumnWidth, defaultPort, autoOpenBrowser, hideEmptyColumns, remoteOperations, autoCommit, filesystemOnly, bypassGitHooks, zeroPaddedIds, checkActiveBranches, activeBranchDays";
+	"Available keys: defaultEditor, projectName, defaultAssignee, defaultStatus, statuses, labels, priorities, priorityColors, types, projects, milestones, definitionOfDone, dateFormat, maxColumnWidth, defaultPort, autoOpenBrowser, hideEmptyColumns, remoteOperations, autoCommit, filesystemOnly, bypassGitHooks, zeroPaddedIds, checkActiveBranches, activeBranchDays";
 
 const configCmd = addHelpSchema(program.command("config"), {
 	reads: "Project Backlog.md configuration",
@@ -5429,6 +5442,9 @@ addHelpSchema(configCmd.command("get <key>"), {
 							.map((priority) => priority.label)
 							.join(", "),
 					);
+					break;
+				case "priorityColors":
+					console.log(formatPriorityColors(config));
 					break;
 				case "types":
 					console.log(getTaskTypeValues(config).join(", "));
@@ -5675,6 +5691,7 @@ addHelpSchema(configCmd.command("set <key> <value>"), {
 				case "labels":
 				case "types":
 				case "priorities":
+				case "priorityColors":
 				case "projects":
 				case "milestones":
 				case "definitionOfDone":
@@ -5748,6 +5765,7 @@ addHelpSchema(configCmd.command("list"), {
 					.map((priority) => priority.label)
 					.join(", ")}]`,
 			);
+			console.log(`  priorityColors: ${formatPriorityColors(config) || "(not set)"}`);
 			console.log(`  types: [${getTaskTypeValues(config).join(", ")}]`);
 			console.log(`  projects: [${getProjectValues(config).join(", ")}]`);
 			const milestones = await core.filesystem.listMilestones();
