@@ -898,10 +898,7 @@ const TaskList: React.FC<TaskListProps> = ({
 													: "bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700/50"
 											}`}
 										>
-											<td
-												className="px-3 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap"
-												title={formatTaskId(task.id) === task.id ? undefined : task.id}
-											>
+											<td className="px-3 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">
 												{formatTaskId(task.id)}
 											</td>
 											<td className="px-3 py-2.5">

@@ -119,15 +119,15 @@ describe("compact task IDs", () => {
 				</CompactTaskIdsProvider>,
 			);
 
-		it("shows the number, with the full ID on hover and for screen readers", () => {
+		it("shows the number, keeping the full ID for screen readers and adding no tooltip", () => {
 			const html = renderCard(on);
 			expect(visibleText(html)).not.toContain("TASK-30");
 			expect(visibleText(html)).toMatch(/\b30\b/);
-			expect(html).toContain('title="TASK-30"');
+			expect(html).not.toContain('title="TASK-30"');
 			expect(html).toContain('aria-label="Open TASK-30: Compact id task"');
 		});
 
-		it("shows the full ID, without a tooltip repeating it, when the setting is off", () => {
+		it("shows the full ID when the setting is off", () => {
 			const html = renderCard();
 			expect(visibleText(html)).toContain("TASK-30");
 			expect(html).not.toContain('title="TASK-30"');
@@ -153,13 +153,13 @@ describe("compact task IDs", () => {
 				</MemoryRouter>,
 			);
 
-		it("shows the number in the ID column, with the full ID on hover", () => {
+		it("shows the number in the ID column, adding no tooltip", () => {
 			const html = renderList(on);
 			expect(visibleText(html)).not.toContain("TASK-30");
-			expect(html).toContain('title="TASK-30"');
+			expect(html).not.toContain('title="TASK-30"');
 		});
 
-		it("shows the full ID, without a tooltip repeating it, when the setting is off", () => {
+		it("shows the full ID when the setting is off", () => {
 			const html = renderList();
 			expect(visibleText(html)).toContain("TASK-30");
 			expect(html).not.toContain('title="TASK-30"');
