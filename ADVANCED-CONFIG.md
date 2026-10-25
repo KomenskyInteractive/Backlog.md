@@ -33,6 +33,7 @@ Running `backlog config` with no arguments launches the interactive advanced wiz
 | `defaultEditor`   | Editor for 'E' key | Platform default (nano/notepad) |
 | `defaultPort`     | Web UI port        | `6420`                        |
 | `autoOpenBrowser` | Open browser automatically | `true`            |
+| `compactTaskIds`  | Show task IDs as numbers on the board and task list | `false` |
 | `remoteOperations`| Enable remote git operations | `true`           |
 | `autoCommit`      | Automatically commit task changes | `false`       |
 | `bypassGitHooks`  | Skip git hooks when committing (uses --no-verify) | `false`       |
@@ -70,6 +71,8 @@ Running `backlog config` with no arguments launches the interactive advanced wiz
 >   Medium: yellow
 >   Low: green
 > ```
+
+> **Compact Task IDs**: With `compactTaskIds` (`compact_task_ids` in the config file) set to `true`, the board and the task list, in the browser and in the TUI, show `30` instead of `TASK-30`. Everywhere else, including an open task and all CLI output, IDs stay in full, and task files and references are unchanged. Only the project's task prefix is dropped, so drafts keep `DRAFT-`.
 
 > **Project Values**: `projects` tags each task with one project in a monorepo-style backlog. It has no default, so the field stays inert until you set it — until then no surface offers it, and `--project` fails with a message naming the config file. Set it by editing the project config file directly (like `statuses`, `labels`, `types`, and `priorities`, it cannot be changed with `backlog config set`):
 >

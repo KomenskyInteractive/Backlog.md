@@ -19,6 +19,7 @@ const CONFIG_POLL_INTERVAL_MS = 500;
 const BOOLEAN_CONFIG_KEYS = new Set([
 	"auto_open_browser",
 	"hide_empty_columns",
+	"compact_task_ids",
 	"remote_operations",
 	"auto_commit",
 	"filesystem_only",

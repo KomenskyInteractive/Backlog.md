@@ -179,6 +179,7 @@ const CONFIG_GET_KEYS = [
 	"maxColumnWidth",
 	"defaultPort",
 	"autoOpenBrowser",
+	"compactTaskIds",
 	"remoteOperations",
 	"autoCommit",
 	"filesystemOnly",
@@ -196,6 +197,7 @@ const CONFIG_SET_KEYS = [
 	"dateFormat",
 	"maxColumnWidth",
 	"autoOpenBrowser",
+	"compactTaskIds",
 	"defaultPort",
 	"remoteOperations",
 	"autoCommit",
@@ -5301,7 +5303,7 @@ function formatPriorityColors(config: BacklogConfig): string {
 }
 
 const CONFIG_AVAILABLE_KEYS =
-	"Available keys: defaultEditor, projectName, defaultAssignee, defaultStatus, statuses, labels, priorities, priorityColors, types, projects, milestones, definitionOfDone, dateFormat, maxColumnWidth, defaultPort, autoOpenBrowser, hideEmptyColumns, remoteOperations, autoCommit, filesystemOnly, bypassGitHooks, zeroPaddedIds, checkActiveBranches, activeBranchDays";
+	"Available keys: defaultEditor, projectName, defaultAssignee, defaultStatus, statuses, labels, priorities, priorityColors, types, projects, milestones, definitionOfDone, dateFormat, maxColumnWidth, defaultPort, autoOpenBrowser, hideEmptyColumns, compactTaskIds, remoteOperations, autoCommit, filesystemOnly, bypassGitHooks, zeroPaddedIds, checkActiveBranches, activeBranchDays";
 
 const configCmd = addHelpSchema(program.command("config"), {
 	reads: "Project Backlog.md configuration",
@@ -5475,6 +5477,9 @@ addHelpSchema(configCmd.command("get <key>"), {
 				case "hideEmptyColumns":
 					console.log(config.hideEmptyColumns?.toString() || "false");
 					break;
+				case "compactTaskIds":
+					console.log(config.compactTaskIds?.toString() || "false");
+					break;
 				case "remoteOperations":
 					console.log(config.remoteOperations?.toString() || "");
 					break;
@@ -5591,6 +5596,18 @@ addHelpSchema(configCmd.command("set <key> <value>"), {
 						config.hideEmptyColumns = false;
 					} else {
 						console.error("hideEmptyColumns must be true or false");
+						process.exit(1);
+					}
+					break;
+				}
+				case "compactTaskIds": {
+					const boolValue = value.toLowerCase();
+					if (boolValue === "true" || boolValue === "1" || boolValue === "yes") {
+						config.compactTaskIds = true;
+					} else if (boolValue === "false" || boolValue === "0" || boolValue === "no") {
+						config.compactTaskIds = false;
+					} else {
+						console.error("compactTaskIds must be true or false");
 						process.exit(1);
 					}
 					break;
@@ -5775,6 +5792,7 @@ addHelpSchema(configCmd.command("list"), {
 			console.log(`  maxColumnWidth: ${config.maxColumnWidth || "(not set)"}`);
 			console.log(`  autoOpenBrowser: ${config.autoOpenBrowser ?? "(not set)"}`);
 			console.log(`  hideEmptyColumns: ${config.hideEmptyColumns ?? "(not set)"}`);
+			console.log(`  compactTaskIds: ${config.compactTaskIds ?? "(not set)"}`);
 			console.log(`  defaultPort: ${config.defaultPort ?? "(not set)"}`);
 			console.log(`  remoteOperations: ${config.remoteOperations ?? "(not set)"}`);
 			console.log(`  autoCommit: ${config.autoCommit ?? "(not set)"}`);

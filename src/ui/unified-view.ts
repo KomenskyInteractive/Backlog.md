@@ -491,6 +491,8 @@ export async function runUnifiedView(options: UnifiedViewOptions): Promise<void>
 					types: config?.types,
 					projects: config?.projects,
 					hideEmptyColumns: config?.hideEmptyColumns ?? false,
+					compactTaskIds: config?.compactTaskIds,
+					prefixes: config?.prefixes,
 					createTask: async (input) => createTaskFromBoard(options.core, input, taskUpdateCallbacks.onTaskAdded),
 				}).then(() => {
 					// If user wants to exit, do it immediately

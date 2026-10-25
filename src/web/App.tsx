@@ -15,6 +15,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import { SuccessToast } from './components/SuccessToast';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { PriorityColorsProvider } from './contexts/PriorityColorsContext';
+import { CompactTaskIdsProvider } from './contexts/CompactTaskIdsContext';
 import { TaskIdIndexProvider } from './contexts/TaskIdIndexContext';
 import {
 	type Decision,
@@ -977,6 +978,7 @@ function AppContent() {
     <ThemeProvider>
       <TaskIdIndexProvider tasks={tasks}>
       <PriorityColorsProvider priorityColors={config?.priorityColors}>
+      <CompactTaskIdsProvider config={config}>
       <Routes>
             <Route
             path="/"
@@ -1112,6 +1114,7 @@ function AppContent() {
           }
         />
       )}
+      </CompactTaskIdsProvider>
       </PriorityColorsProvider>
       </TaskIdIndexProvider>
     </ThemeProvider>

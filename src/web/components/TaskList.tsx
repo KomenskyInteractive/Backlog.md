@@ -24,6 +24,7 @@ import StoredDate from "./StoredDate";
 import AcceptanceCriteriaProgress, { getAcceptanceCriteriaProgressCounts } from "./AcceptanceCriteriaProgress";
 import LabelFilterDropdown from "./LabelFilterDropdown";
 import { SuccessToast } from "./SuccessToast";
+import { useCompactTaskId } from "../contexts/CompactTaskIdsContext";
 
 interface TaskListProps {
 	onEditTask: (task: Task) => void;
@@ -135,6 +136,7 @@ const TaskList: React.FC<TaskListProps> = ({
 	isLoading = false,
 }) => {
 	const getPriorityColorClasses = usePriorityColorClasses();
+	const formatTaskId = useCompactTaskId();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const statusOptions = useMemo(
 		() => (availableStatuses.length > 0 ? availableStatuses : [...DEFAULT_STATUSES]),
@@ -886,7 +888,7 @@ const TaskList: React.FC<TaskListProps> = ({
 											}`}
 										>
 											<td className="px-3 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">
-												{task.id}
+												{formatTaskId(task.id)}
 											</td>
 											<td className="px-3 py-2.5">
 												<div className="flex items-center gap-2 min-w-0">

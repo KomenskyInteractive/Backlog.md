@@ -117,6 +117,16 @@ describe("config watcher", () => {
 				'task_prefix: "BACK-2"',
 				"",
 			].join("\n"),
+			[
+				'project_name: "Malformed compact task IDs"',
+				'statuses: ["To Do", "Done"]',
+				'labels: ["web"]',
+				"date_format: YYYY-MM-DD",
+				"check_active_branches: true",
+				"compact_task_ids: yes",
+				'task_prefix: "BACK"',
+				"",
+			].join("\n"),
 		];
 		const originalParseConfig = core.filesystem.parseConfig.bind(core.filesystem);
 		const unusableParseAttempts = new Map(unusableContents.map((content) => [content, 0]));
