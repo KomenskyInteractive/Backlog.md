@@ -1,5 +1,5 @@
-import type { BacklogConfig, Task } from "../types/index.ts";
-import { DEFAULT_PREFIX_CONFIG, escapeRegex, extractAnyPrefix, extractIdBody, normalizeId } from "./prefix-config.ts";
+import { type BacklogConfig, EntityType, type Task } from "../types/index.ts";
+import { escapeRegex, extractAnyPrefix, extractIdBody, getPrefixForType, normalizeId } from "./prefix-config.ts";
 
 const DEFAULT_TASK_PREFIX = "task";
 const NUMERIC_TASK_ID_PATTERN = /^(?:[a-zA-Z]+-)?[0-9]+(?:\.[0-9]+)*$/;
@@ -124,5 +124,5 @@ export function formatCompactTaskId(
 	config: Pick<BacklogConfig, "compactTaskIds" | "prefixes"> | null | undefined,
 ): string {
 	if (!config?.compactTaskIds) return taskId;
-	return extractIdBody(taskId, config.prefixes?.task ?? DEFAULT_PREFIX_CONFIG.task);
+	return extractIdBody(taskId, getPrefixForType(EntityType.Task, config));
 }

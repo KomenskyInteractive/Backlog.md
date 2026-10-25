@@ -470,7 +470,7 @@ export function escapeRegex(str: string): string {
  * getPrefixForType(EntityType.Document) // => "doc"
  * getPrefixForType(EntityType.Decision) // => "decision"
  */
-export function getPrefixForType(type: EntityType, config?: BacklogConfig): string {
+export function getPrefixForType(type: EntityType, config?: Pick<BacklogConfig, "prefixes"> | null): string {
 	switch (type) {
 		case EntityType.Task:
 			return config?.prefixes?.task ?? DEFAULT_PREFIX_CONFIG.task;

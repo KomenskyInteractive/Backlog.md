@@ -900,7 +900,7 @@ const TaskList: React.FC<TaskListProps> = ({
 										>
 											<td
 												className="px-3 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap"
-												title={task.id}
+												title={formatTaskId(task.id) === task.id ? undefined : task.id}
 											>
 												{formatTaskId(task.id)}
 											</td>

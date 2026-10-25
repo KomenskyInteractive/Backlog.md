@@ -127,8 +127,10 @@ describe("compact task IDs", () => {
 			expect(html).toContain('aria-label="Open TASK-30: Compact id task"');
 		});
 
-		it("shows the full ID when the setting is off", () => {
-			expect(visibleText(renderCard())).toContain("TASK-30");
+		it("shows the full ID, without a tooltip repeating it, when the setting is off", () => {
+			const html = renderCard();
+			expect(visibleText(html)).toContain("TASK-30");
+			expect(html).not.toContain('title="TASK-30"');
 		});
 	});
 
@@ -157,8 +159,10 @@ describe("compact task IDs", () => {
 			expect(html).toContain('title="TASK-30"');
 		});
 
-		it("shows the full ID when the setting is off", () => {
-			expect(visibleText(renderList())).toContain("TASK-30");
+		it("shows the full ID, without a tooltip repeating it, when the setting is off", () => {
+			const html = renderList();
+			expect(visibleText(html)).toContain("TASK-30");
+			expect(html).not.toContain('title="TASK-30"');
 		});
 	});
 
