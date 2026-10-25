@@ -14,6 +14,7 @@ import InitializationScreen from './components/InitializationScreen';
 import LoadingSpinner from './components/LoadingSpinner';
 import { SuccessToast } from './components/SuccessToast';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { CompactTaskIdsProvider } from './contexts/CompactTaskIdsContext';
 import { TaskIdIndexProvider } from './contexts/TaskIdIndexContext';
 import {
 	type Decision,
@@ -975,6 +976,7 @@ function AppContent() {
   return (
     <ThemeProvider>
       <TaskIdIndexProvider tasks={tasks}>
+      <CompactTaskIdsProvider config={config}>
       <Routes>
             <Route
             path="/"
@@ -1110,6 +1112,7 @@ function AppContent() {
           }
         />
       )}
+      </CompactTaskIdsProvider>
       </TaskIdIndexProvider>
     </ThemeProvider>
   );

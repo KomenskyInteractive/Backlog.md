@@ -23,6 +23,7 @@ import StoredDate from "./StoredDate";
 import AcceptanceCriteriaProgress, { getAcceptanceCriteriaProgressCounts } from "./AcceptanceCriteriaProgress";
 import LabelFilterDropdown from "./LabelFilterDropdown";
 import { SuccessToast } from "./SuccessToast";
+import { useCompactTaskId } from "../contexts/CompactTaskIdsContext";
 
 interface TaskListProps {
 	onEditTask: (task: Task) => void;
@@ -133,6 +134,7 @@ const TaskList: React.FC<TaskListProps> = ({
 	dateFormat,
 	isLoading = false,
 }) => {
+	const formatTaskId = useCompactTaskId();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const statusOptions = useMemo(
 		() => (availableStatuses.length > 0 ? availableStatuses : [...DEFAULT_STATUSES]),
@@ -896,8 +898,11 @@ const TaskList: React.FC<TaskListProps> = ({
 													: "bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700/50"
 											}`}
 										>
-											<td className="px-3 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">
-												{task.id}
+											<td
+												className="px-3 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap"
+												title={task.id}
+											>
+												{formatTaskId(task.id)}
 											</td>
 											<td className="px-3 py-2.5">
 												<div className="flex items-center gap-2 min-w-0">

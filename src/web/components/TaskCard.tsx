@@ -5,6 +5,7 @@ import AcceptanceCriteriaProgress, { getAcceptanceCriteriaProgressCounts } from 
 import StoredDate from './StoredDate';
 import ProjectBadge from './ProjectBadge';
 import TaskTypeBadge from './TaskTypeBadge';
+import { useCompactTaskId } from '../contexts/CompactTaskIdsContext';
 
 interface TaskCardProps {
   task: Task;
@@ -76,6 +77,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   onSelectionDragChange,
 }) => {
   const [isDragging, setIsDragging] = React.useState(false);
+  const formatTaskId = useCompactTaskId();
   const [showBranchTooltip, setShowBranchTooltip] = React.useState(false);
 
   // Check if task is from another branch (read-only)
@@ -232,7 +234,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             flush right, so the badges are not squeezed to make room for it. */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1.5">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="shrink-0 text-xs text-gray-400 dark:text-gray-500 font-mono transition-colors duration-200">{task.id}</span>
+            <span className="shrink-0 text-xs text-gray-400 dark:text-gray-500 font-mono transition-colors duration-200" title={task.id}>{formatTaskId(task.id)}</span>
             <TaskTypeBadge type={task.type} availableTypes={availableTypes} className="min-w-0" />
             <ProjectBadge project={task.project} availableProjects={availableProjects} className="min-w-0" />
           </div>

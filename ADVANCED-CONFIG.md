@@ -32,6 +32,7 @@ Running `backlog config` with no arguments launches the interactive advanced wiz
 | `defaultEditor`   | Editor for 'E' key | Platform default (nano/notepad) |
 | `defaultPort`     | Web UI port        | `6420`                        |
 | `autoOpenBrowser` | Open browser automatically | `true`            |
+| `compactTaskIds`  | Show task IDs as numbers on the board and task list | `false` |
 | `remoteOperations`| Enable remote git operations | `true`           |
 | `autoCommit`      | Automatically commit task changes | `false`       |
 | `bypassGitHooks`  | Skip git hooks when committing (uses --no-verify) | `false`       |
@@ -58,6 +59,8 @@ Running `backlog config` with no arguments launches the interactive advanced wiz
 > **Default Assignee**: `defaultAssignee` is a list, so `backlog config set defaultAssignee "@alice,@bob"` stores both names. Every create surface (CLI `task create` and `draft create`, the creation wizard, TUI, Web, MCP) applies it when no assignee is supplied. An explicit assignee replaces the default entirely instead of merging with it, and setting the value to an empty string clears the default so new tasks start unassigned. To keep a single task unassigned while the default stays configured, pass an explicit empty assignee: `backlog task create "Title" -a ""`. The same value clears existing assignees on edit: `backlog task edit BACK-1 -a ""` (MCP `task_create`/`task_edit` use an empty `assignee` array). When editing `config.yml` by hand, quote the names (`default_assignee: ["@alice"]`) because `@` starts a reserved YAML character; a value YAML cannot read is ignored rather than guessed at.
 
 > **Priority Values**: Set `priorities` to an ordered list of labels such as `["Very High", "High", "Medium", "Low", "Very Low"]`. The first value sorts highest. CLI, MCP, and Web inputs accept configured values case-insensitively and store normalized lowercase values in task frontmatter.
+
+> **Compact Task IDs**: With `compactTaskIds` (`compact_task_ids` in the config file) set to `true`, the web board, the web task list and the TUI board show `30` instead of `TASK-30`; hover a web ID to see it in full. Everywhere else, including an open task and all CLI output, IDs stay in full, and task files and references are unchanged. Only the project's task prefix is dropped, so drafts keep `DRAFT-`.
 
 > **Project Values**: `projects` tags each task with one project in a monorepo-style backlog. It has no default, so the field stays inert until you set it — until then no surface offers it, and `--project` fails with a message naming the config file. Set it by editing the project config file directly (like `statuses`, `labels`, `types`, and `priorities`, it cannot be changed with `backlog config set`):
 >

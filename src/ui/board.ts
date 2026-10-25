@@ -7,7 +7,7 @@ import {
 	generateMilestoneGroupedBoard,
 } from "../board.ts";
 import { type Core, createRuntimeCore } from "../core/backlog.ts";
-import type { LabelMatchMode, Milestone, Task, TaskCreateInput } from "../types/index.ts";
+import type { BacklogConfig, LabelMatchMode, Milestone, Task, TaskCreateInput } from "../types/index.ts";
 import { copyToClipboard } from "../utils/clipboard.ts";
 import { areLabelSelectionsEqual, collectAvailableLabels } from "../utils/label-filter.ts";
 import {
@@ -17,6 +17,7 @@ import {
 } from "../utils/milestone-filter.ts";
 import { getPriorityOptions } from "../utils/priority-config.ts";
 import { getProjectValues, resolveProjectValues } from "../utils/project-config.ts";
+import { formatCompactTaskId } from "../utils/task-id.ts";
 import { applyTaskFilters, createTaskSearchIndex } from "../utils/task-search.ts";
 import { compareTaskIds, sortTasks } from "../utils/task-sorting.ts";
 import { getTaskTypeValues, resolveTaskTypeValues } from "../utils/task-type-config.ts";
@@ -158,6 +159,7 @@ export function formatTaskListItem(
 	// Board columns already name the status, so the prefix here is progress alone. Rendering a
 	// lone row aligns it against itself.
 	formatPrefix: TaskRowPrefix = createTaskRowPrefix([task], { showStatus: false }),
+	formatTaskId: (taskId: string) => string = (taskId) => taskId,
 ): string {
 	const assignee = task.assignee?.[0]
 		? ` {cyan-fg}${task.assignee[0].startsWith("@") ? task.assignee[0] : `@${task.assignee[0]}`}{/}`
@@ -175,7 +177,7 @@ export function formatTaskListItem(
 	const prefix = formatPrefix(task);
 
 	// Cross-branch tasks are dimmed to indicate read-only status
-	const content = `{bold}${task.id}{/bold}${type}${project}${dueDate} - ${task.title}${assignee}${labels}${branch}`;
+	const content = `{bold}${formatTaskId(task.id)}{/bold}${type}${project}${dueDate} - ${task.title}${assignee}${labels}${branch}`;
 	if (isMoving) {
 		return `${prefix}{magenta-fg}► ${content}{/}`;
 	}
@@ -190,10 +192,18 @@ function buildRenderedTaskListItems(
 	movingTaskIds?: ReadonlySet<string>,
 	dateFormat?: string,
 	configuredProjects?: string[],
+	formatTaskId?: (taskId: string) => string,
 ): { rich: string[]; plain: string[] } {
 	const formatPrefix = createTaskRowPrefix(tasks, { showStatus: false });
 	const rich = tasks.map((task) =>
-		formatTaskListItem(task, movingTaskIds?.has(task.id) ?? false, dateFormat, configuredProjects, formatPrefix),
+		formatTaskListItem(
+			task,
+			movingTaskIds?.has(task.id) ?? false,
+			dateFormat,
+			configuredProjects,
+			formatPrefix,
+			formatTaskId,
+		),
 	);
 	return {
 		rich,
@@ -326,6 +336,9 @@ export async function renderBoardTui(
 		startupWarning?: string;
 		dateFormat?: string;
 		hideEmptyColumns?: boolean;
+		/** `compact_task_ids` and the task prefix it drops from the IDs on the board. */
+		compactTaskIds?: boolean;
+		prefixes?: BacklogConfig["prefixes"];
 		projectName?: string;
 		createTask?: (input: TaskCreateInput) => Promise<Task>;
 		screen?: ScreenInterface;
@@ -409,6 +422,8 @@ export async function renderBoardTui(
 		};
 		const configuredTaskTypes = getTaskTypeValues(options?.types);
 		const configuredProjects = getProjectValues(options?.projects);
+		const formatBoardTaskId = (taskId: string) =>
+			formatCompactTaskId(taskId, { compactTaskIds: options?.compactTaskIds, prefixes: options?.prefixes });
 		const sharedFilters = {
 			searchQuery: options?.filters?.searchQuery ?? "",
 			excludeStatus: [...(options?.filters?.excludeStatus ?? [])],
@@ -657,6 +672,7 @@ export async function renderBoardTui(
 				moveOp ? new Set(getMoveSetIds(moveOp)) : undefined,
 				options?.dateFormat,
 				configuredProjects,
+				formatBoardTaskId,
 			);
 
 		const createColumnViews = (data: ColumnData[]) => {

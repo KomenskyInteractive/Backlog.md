@@ -1,5 +1,5 @@
-import type { Task } from "../types/index.ts";
-import { escapeRegex, extractAnyPrefix, normalizeId } from "./prefix-config.ts";
+import type { BacklogConfig, Task } from "../types/index.ts";
+import { DEFAULT_PREFIX_CONFIG, escapeRegex, extractAnyPrefix, extractIdBody, normalizeId } from "./prefix-config.ts";
 
 const DEFAULT_TASK_PREFIX = "task";
 const NUMERIC_TASK_ID_PATTERN = /^(?:[a-zA-Z]+-)?[0-9]+(?:\.[0-9]+)*$/;
@@ -112,4 +112,17 @@ export function resolveTaskById(tasks: Task[], inputId: string): TaskIdResolutio
 
 	const task = matches[0];
 	return task ? { status: "found", task } : { status: "not-found" };
+}
+
+/**
+ * A task ID as the board and the task list show it: without the project's task prefix when
+ * `compact_task_ids` is on (`30` for `TASK-30`). Drafts and other prefixes keep theirs, so nothing
+ * else passes for a task. Every other surface, and all CLI output, shows the full ID.
+ */
+export function formatCompactTaskId(
+	taskId: string,
+	config: Pick<BacklogConfig, "compactTaskIds" | "prefixes"> | null | undefined,
+): string {
+	if (!config?.compactTaskIds) return taskId;
+	return extractIdBody(taskId, config.prefixes?.task ?? DEFAULT_PREFIX_CONFIG.task);
 }
