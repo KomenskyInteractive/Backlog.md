@@ -142,6 +142,7 @@ describe("priority colors", () => {
 				const set = await $`bun ${cli} config set priorityColors x`.cwd(testDir).nothrow().quiet();
 				expect(set.exitCode).not.toBe(0);
 				expect(set.stderr.toString()).toContain("config file");
+				expect(await $`bun ${cli} config get --help`.cwd(testDir).text()).toContain("priorityColors");
 			} finally {
 				await safeCleanup(testDir);
 			}

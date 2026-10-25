@@ -170,6 +170,7 @@ const CONFIG_GET_KEYS = [
 	"statuses",
 	"labels",
 	"priorities",
+	"priorityColors",
 	"types",
 	"projects",
 	"milestones",
