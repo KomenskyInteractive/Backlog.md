@@ -1,0 +1,39 @@
+# Komensky Interactive's fork: builds the macOS binary for our Homebrew tap.
+# Runs only on `komensky-v*` tags, so upstream's `v*.*.*` release workflow never fires here.
+name: Komensky release
+
+on:
+  push:
+    tags: ["komensky-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest # Apple Silicon
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4 # keep in step with BUN_VERSION in release.yml
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build
+        run: |
+          version="${GITHUB_REF_NAME#komensky-v}"
+          BACKLOG_BUILD_VERSION="$version" BACKLOG_BUILD_OUTFILE=dist/backlog bun scripts/build.ts
+          ./dist/backlog --version
+          tar -C dist -czf "backlog-darwin-arm64.tar.gz" backlog
+          shasum -a 256 backlog-darwin-arm64.tar.gz | tee backlog-darwin-arm64.tar.gz.sha256
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes "Backlog.md with Komensky Interactive's changes." \
+            backlog-darwin-arm64.tar.gz backlog-darwin-arm64.tar.gz.sha256
