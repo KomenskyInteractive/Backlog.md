@@ -33,7 +33,7 @@ import { hasAnyPrefix } from "../utils/prefix-config.ts";
 import { formatPriorityLabel, getPriorityOptions, normalizePriorityValue } from "../utils/priority-config.ts";
 import { getProjectValues, resolveProjectValues } from "../utils/project-config.ts";
 import { formatReadinessBlockers } from "../utils/readiness.ts";
-import { canonicalTaskId, taskIdsEqual } from "../utils/task-id.ts";
+import { canonicalTaskId, formatCompactTaskId, taskIdsEqual } from "../utils/task-id.ts";
 import { applyTaskFilters, createTaskSearchIndex } from "../utils/task-search.ts";
 import { sectionTasks, sortTasks } from "../utils/task-sorting.ts";
 import { attachSubtaskSummaries } from "../utils/task-subtasks.ts";
@@ -69,6 +69,7 @@ export function formatTaskViewerListItem(
 	// The list mixes statuses and nothing else names them, so the prefix carries the status
 	// label. Rendering a lone row aligns it against itself.
 	formatPrefix: TaskRowPrefix = createTaskRowPrefix([task], { showStatus: true }),
+	formatTaskId: (taskId: string) => string = (taskId) => taskId,
 ): string {
 	const assigneeText = task.assignee?.length
 		? ` {cyan-fg}${task.assignee[0]?.startsWith("@") ? task.assignee[0] : `@${task.assignee[0]}`}{/}`
@@ -88,7 +89,7 @@ export function formatTaskViewerListItem(
 	// The prefix keeps its own color tags, whose {/} would close the cross-branch dim, so the
 	// dim starts at the task id.
 	const prefix = formatPrefix(task);
-	const content = `{bold}${task.id}{/bold}${typeText}${projectText}${dueDateText} ${titleSeparator} ${task.title}${assigneeText}${labelsText}${branchText}`;
+	const content = `{bold}${formatTaskId(task.id)}{/bold}${typeText}${projectText}${dueDateText} ${titleSeparator} ${task.title}${assigneeText}${labelsText}${branchText}`;
 	return `${prefix}${isCrossBranch ? `{gray-fg}${content}{/}` : content}`;
 }
 
@@ -298,6 +299,7 @@ export async function viewTaskEnhanced(
 	let priorityOptions = getPriorityOptions();
 	let configuredTaskTypes = getTaskTypeValues();
 	let configuredProjects = getProjectValues();
+	let formatListTaskId = (taskId: string) => taskId;
 	let availableLabels: string[] = [];
 	let contentStore: Awaited<ReturnType<typeof core.getContentStore>> | null = null;
 	// Archived tasks are loaded alongside the milestone metadata so dependency readiness can
@@ -324,6 +326,7 @@ export async function viewTaskEnhanced(
 		priorityOptions = getPriorityOptions(config);
 		configuredTaskTypes = getTaskTypeValues(config);
 		configuredProjects = getProjectValues(config);
+		formatListTaskId = (taskId) => formatCompactTaskId(taskId, config);
 		dateFormat = config?.dateFormat;
 		projectName = config?.projectName;
 	} else {
@@ -337,6 +340,7 @@ export async function viewTaskEnhanced(
 			priorityOptions = getPriorityOptions(config);
 			configuredTaskTypes = getTaskTypeValues(config);
 			configuredProjects = getProjectValues(config);
+			formatListTaskId = (taskId) => formatCompactTaskId(taskId, config);
 			dateFormat = config?.dateFormat;
 			projectName = config?.projectName;
 
@@ -983,7 +987,7 @@ export async function viewTaskEnhanced(
 			width: "100%-4",
 			height: "100%-3",
 			itemRenderer: (task: Task) =>
-				formatTaskViewerListItem(task, dateFormat, configuredProjects, priorityOrder, taskRowPrefix),
+				formatTaskViewerListItem(task, dateFormat, configuredProjects, priorityOrder, taskRowPrefix, formatListTaskId),
 			onSelect: (selected: Task | Task[]) => {
 				const selectedTask = Array.isArray(selected) ? selected[0] : selected;
 				void applySelection(selectedTask || null);

@@ -6,6 +6,7 @@ import { FileSystem } from "../file-system/operations.ts";
 import { Core } from "../index.ts";
 import type { BacklogConfig, Task } from "../types/index.ts";
 import { formatTaskListItem } from "../ui/board.ts";
+import { formatTaskViewerListItem } from "../ui/task-viewer-with-search.ts";
 import { formatCompactTaskId } from "../utils/task-id.ts";
 import TaskCard from "../web/components/TaskCard.tsx";
 import TaskList from "../web/components/TaskList.tsx";
@@ -161,7 +162,7 @@ describe("compact task IDs", () => {
 		});
 	});
 
-	describe("TUI board", () => {
+	describe("TUI board and task list", () => {
 		it("shows the number on a board row when given the compact formatter", () => {
 			const row = formatTaskListItem(task, false, undefined, undefined, undefined, (id) => formatCompactTaskId(id, on));
 			expect(row).toContain("{bold}30{/bold}");
@@ -170,6 +171,14 @@ describe("compact task IDs", () => {
 
 		it("shows the full ID by default", () => {
 			expect(formatTaskListItem(task)).toContain("{bold}TASK-30{/bold}");
+		});
+
+		it("shows the number in the task list row too, and the full ID by default", () => {
+			const row = formatTaskViewerListItem(task, undefined, undefined, undefined, undefined, (id) =>
+				formatCompactTaskId(id, on),
+			);
+			expect(row).toContain("{bold}30{/bold}");
+			expect(formatTaskViewerListItem(task)).toContain("{bold}TASK-30{/bold}");
 		});
 	});
 });

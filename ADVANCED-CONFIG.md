@@ -60,7 +60,7 @@ Running `backlog config` with no arguments launches the interactive advanced wiz
 
 > **Priority Values**: Set `priorities` to an ordered list of labels such as `["Very High", "High", "Medium", "Low", "Very Low"]`. The first value sorts highest. CLI, MCP, and Web inputs accept configured values case-insensitively and store normalized lowercase values in task frontmatter.
 
-> **Compact Task IDs**: With `compactTaskIds` (`compact_task_ids` in the config file) set to `true`, the web board, the web task list and the TUI board show `30` instead of `TASK-30`; hover a web ID to see it in full. Everywhere else, including an open task and all CLI output, IDs stay in full, and task files and references are unchanged. Only the project's task prefix is dropped, so drafts keep `DRAFT-`.
+> **Compact Task IDs**: With `compactTaskIds` (`compact_task_ids` in the config file) set to `true`, the board and the task list, in the browser and in the TUI, show `30` instead of `TASK-30`; hover a web ID to see it in full. Everywhere else, including an open task and all CLI output, IDs stay in full, and task files and references are unchanged. Only the project's task prefix is dropped, so drafts keep `DRAFT-`.
 
 > **Project Values**: `projects` tags each task with one project in a monorepo-style backlog. It has no default, so the field stays inert until you set it — until then no surface offers it, and `--project` fails with a message naming the config file. Set it by editing the project config file directly (like `statuses`, `labels`, `types`, and `priorities`, it cannot be changed with `backlog config set`):
 >
